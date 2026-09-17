@@ -28,7 +28,9 @@ export default function App() {
 
         {currentTab === 'Safe Routes' && <Routes />}
 
-        {currentTab === 'Report Hazard' && <ReportHazard />}
+        {currentTab === 'Report Hazard' && (
+          <ReportHazard onViewOnMap={() => setCurrentTab('Home')} />
+        )}
 
         {currentTab === 'Admin Dashboard' && <AdminDashboard />}
       </main>
@@ -46,7 +48,7 @@ export default function App() {
                   RouteSafe AI
                 </div>
                 <div className="text-xs text-slate-500">
-                  Student Safety Navigation Platform • Step 1 Frontend Foundation
+                  Student Safety Navigation Platform • Connected Intelligence
                 </div>
               </div>
             </div>

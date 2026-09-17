@@ -37,6 +37,14 @@ export interface RiskEvaluation {
 
 export type RouteCategory = 'Fastest' | 'Safest' | 'Balanced';
 
+export interface RiskFactors {
+  accident: number;
+  flood: number;
+  traffic: number;
+  lighting: number;
+  road_condition: number;
+}
+
 export interface RouteOption {
   id: string;
   name: string; // "FASTEST", "SAFEST", "BALANCED"
@@ -51,6 +59,7 @@ export interface RouteOption {
   description: string;
   highlights: string[];
   coordinates: [number, number][];
+  riskFactors?: RiskFactors;
 }
 
 export interface QuickSafetyStatus {
@@ -64,7 +73,45 @@ export interface AdminDashboardStats {
   highRiskZones: number;
   totalReports: number;
   todayReports: number;
+  safeCorridors?: number;
+  weatherCondition?: string;
 }
+
+export interface HotspotItem {
+  id: string;
+  type: string;
+  severity: HazardSeverity;
+  locationName: string;
+  coordinates: [number, number];
+  description: string;
+  riskContribution: number;
+}
+
+export interface ChartHazardType {
+  type: string;
+  count: number;
+  color?: string;
+}
+
+export interface ChartRiskDist {
+  range: string;
+  level: string;
+  percentage: number;
+  color?: string;
+}
+
+export interface ChartReportTrend {
+  day: string;
+  reports: number;
+  verified: number;
+}
+
+export interface DashboardChartsData {
+  hazardsByType: ChartHazardType[];
+  riskDistribution: ChartRiskDist[];
+  reportsOverTime: ChartReportTrend[];
+}
+
 
 export interface LocationPreset {
   id: string;

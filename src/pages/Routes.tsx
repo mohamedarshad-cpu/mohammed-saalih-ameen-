@@ -33,8 +33,10 @@ export const Routes: React.FC = () => {
       origin: 'South Campus Residence Halls',
       destination: 'State University — Main Gate & Quad',
       heavyRain,
-    }).then((updatedRoutes) => {
-      setRoutes(updatedRoutes);
+    }).then((res) => {
+      if (res.data && res.data.length > 0) {
+        setRoutes(res.data);
+      }
     });
   }, [heavyRain]);
 

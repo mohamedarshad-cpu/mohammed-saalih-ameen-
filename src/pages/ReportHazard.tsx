@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { HazardType, HazardSeverity } from '../types';
+import { HazardType, HazardSeverity, Hazard } from '../types';
 import { submitHazard } from '../services/api';
 import {
   AlertTriangle,
@@ -16,6 +16,8 @@ import {
   TrafficCone,
   X,
   ShieldAlert,
+  ArrowRight,
+  Eye,
 } from 'lucide-react';
 
 const HAZARD_TYPES: { type: HazardType; label: string; icon: React.ReactNode }[] = [
@@ -27,7 +29,15 @@ const HAZARD_TYPES: { type: HazardType; label: string; icon: React.ReactNode }[]
   { type: 'High Traffic', label: 'High Traffic', icon: <TrafficCone className="w-4 h-4 text-amber-600" /> },
 ];
 
-export const ReportHazard: React.FC = () => {
+export interface ReportHazardProps {
+  onReportSubmitted?: (newHazard: Hazard) => void;
+  onViewOnMap?: () => void;
+}
+
+export const ReportHazard: React.FC<ReportHazardProps> = ({
+  onReportSubmitted,
+  onViewOnMap,
+}) => {
   // Form states
   const [location, setLocation] = useState('');
   const [selectedHazards, setSelectedHazards] = useState<HazardType[]>(['Poor Lighting']);
@@ -36,6 +46,7 @@ export const ReportHazard: React.FC = () => {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [lastSubmittedHazard, setLastSubmittedHazard] = useState<Hazard | null>(null);
 
   const toggleHazardType = (type: HazardType) => {
     if (selectedHazards.includes(type)) {
@@ -67,22 +78,30 @@ export const ReportHazard: React.FC = () => {
 
     setIsSubmitting(true);
 
-    // Call frontend API service (TODO: backend database storage in Step 2)
-    await submitHazard({
-      location,
-      hazardTypes: selectedHazards,
-      severity,
-      description: description || `Reported ${selectedHazards.join(', ')} near ${location}`,
-      photoUrl: photoPreview || undefined,
-    });
+    try {
+      const result = await submitHazard({
+        location,
+        hazardTypes: selectedHazards,
+        severity,
+        description: description || `Reported ${selectedHazards.join(', ')} near ${location}`,
+        photoUrl: photoPreview || undefined,
+      });
 
-    setIsSubmitting(false);
-    setSubmitSuccess(true);
+      setIsSubmitting(false);
+      setSubmitSuccess(true);
+      setLastSubmittedHazard(result.hazard);
+      onReportSubmitted?.(result.hazard);
 
-    // Reset inputs
-    setLocation('');
-    setDescription('');
-    setPhotoPreview(null);
+      // Clear form
+      setLocation('');
+      setDescription('');
+      setPhotoPreview(null);
+      setSelectedHazards(['Poor Lighting']);
+      setSeverity('Medium');
+    } catch (err) {
+      setIsSubmitting(false);
+      alert('Failed to submit report. Operating in offline demo mode.');
+    }
   };
 
   return (
@@ -107,25 +126,52 @@ export const ReportHazard: React.FC = () => {
       {/* Success Notification */}
       {submitSuccess && (
         <div
+          id="hazard-submitted-success"
           role="status"
-          className="rounded-2xl bg-emerald-50 border border-emerald-300 p-4 text-emerald-950 flex items-start gap-3 shadow-xs"
+          className="rounded-2xl bg-emerald-50 border-2 border-emerald-300 p-5 text-emerald-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm"
         >
-          <div className="p-1 rounded-full bg-emerald-100 text-emerald-700">
-            <CheckCircle2 className="w-5 h-5" />
+          <div className="flex items-start gap-3">
+            <div className="p-1.5 rounded-full bg-emerald-100 text-emerald-700 shrink-0">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-extrabold text-sm text-emerald-950">
+                Hazard Report Successfully Registered
+              </h4>
+              <p className="text-xs text-emerald-800 mt-0.5 leading-relaxed">
+                Stored in safety database. New marker pin added to the campus map and route risk scores recalculated.
+              </p>
+              {lastSubmittedHazard && (
+                <div className="mt-2 text-xs font-semibold text-emerald-900 flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-emerald-200/80 rounded">
+                    {lastSubmittedHazard.type}
+                  </span>
+                  <span>📍 {lastSubmittedHazard.locationName}</span>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex-1">
-            <h4 className="font-bold text-sm">Hazard Report Submitted Successfully</h4>
-            <p className="text-xs text-emerald-800 mt-0.5">
-              Thank you! Your report has been dispatched to the safety queue. Real-time route risk scores will reflect this report.
-            </p>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+            {onViewOnMap && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={onViewOnMap}
+                rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-xs"
+              >
+                View on Map
+              </Button>
+            )}
+            <button
+              onClick={() => setSubmitSuccess(false)}
+              className="text-emerald-700 hover:text-emerald-900 p-1.5 rounded-lg hover:bg-emerald-100 cursor-pointer"
+              aria-label="Dismiss"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <button
-            onClick={() => setSubmitSuccess(false)}
-            className="text-emerald-700 hover:text-emerald-900 p-1"
-            aria-label="Dismiss"
-          >
-            <X className="w-4 h-4" />
-          </button>
         </div>
       )}
 
@@ -147,7 +193,7 @@ export const ReportHazard: React.FC = () => {
                 onClick={() => setLocation('Telegraph Ave & Bancroft Way, Berkeley')}
                 className="text-[11px] font-semibold text-sky-700 hover:underline"
               >
-                Use Pin Location
+                Use Sample Landmark
               </button>
             </div>
 
@@ -303,7 +349,7 @@ export const ReportHazard: React.FC = () => {
                   Click or drag photo here to upload
                 </div>
                 <div className="text-[11px] text-slate-400 mt-1">
-                  PNG, JPG or WEBP up to 5MB (Simulated)
+                  PNG, JPG or WEBP up to 5MB
                 </div>
                 <input
                   id="hazard-photo-file"
@@ -319,7 +365,7 @@ export const ReportHazard: React.FC = () => {
           {/* Submit Button */}
           <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-xs text-slate-400">
-              * Reports will be verified by campus safety AI routing algorithms.
+              * Reports are verified by campus safety dispatch and reflected in live routing.
             </div>
 
             <Button
@@ -328,7 +374,7 @@ export const ReportHazard: React.FC = () => {
               variant="danger"
               size="lg"
               isLoading={isSubmitting}
-              className="w-full sm:w-auto font-bold tracking-wide"
+              className="w-full sm:w-auto font-bold tracking-wide shadow-md"
             >
               Submit Hazard Report
             </Button>

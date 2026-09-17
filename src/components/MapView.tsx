@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
-import { Hazard, RouteOption } from '../types';
+import { Hazard, RouteOption, HotspotItem } from '../types';
 import { getHazardIconMeta, getSeverityBadge } from './HazardMarker';
 import { MOCK_STUDENT_LOCATION, MOCK_COLLEGE_LOCATION } from '../data/mockData';
 import { getRiskColor } from '../utils/riskUtils';
@@ -9,6 +9,7 @@ import { Layers, ShieldCheck, MapPin } from 'lucide-react';
 export interface MapViewProps {
   hazards?: Hazard[];
   routes?: RouteOption[];
+  hotspots?: HotspotItem[];
   selectedRouteId?: string;
   onSelectRoute?: (routeId: string) => void;
   studentLocation?: [number, number];
@@ -23,6 +24,7 @@ export interface MapViewProps {
 export const MapView: React.FC<MapViewProps> = ({
   hazards = [],
   routes = [],
+  hotspots = [],
   selectedRouteId,
   onSelectRoute,
   studentLocation = MOCK_STUDENT_LOCATION,
@@ -248,6 +250,56 @@ export const MapView: React.FC<MapViewProps> = ({
       marker.addTo(markersLayer);
     });
 
+    // 2.5 Hotspot markers (for Admin Live Hotspot Map)
+    hotspots.forEach((hotspot) => {
+      const riskScore = hotspot.riskContribution;
+      const riskColorHex =
+        riskScore <= 30
+          ? '#10b981' // LOW = green
+          : riskScore <= 60
+          ? '#f59e0b' // MEDIUM = yellow
+          : '#ef4444'; // HIGH = red
+
+      const riskTierLabel =
+        riskScore <= 30 ? 'LOW RISK' : riskScore <= 60 ? 'MEDIUM RISK' : 'HIGH RISK';
+
+      const hotspotIcon = L.divIcon({
+        className: `hotspot-marker-${hotspot.id}`,
+        html: `
+          <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px;">
+            <div style="position: absolute; width: 32px; height: 32px; border-radius: 9999px; background: ${riskColorHex}33; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+            <div style="width: 26px; height: 26px; border-radius: 9999px; background: ${riskColorHex}; border: 2.5px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 800;">
+              ${Math.round(riskScore)}
+            </div>
+          </div>
+        `,
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
+      });
+
+      const hMarker = L.marker(hotspot.coordinates, { icon: hotspotIcon });
+      hMarker.bindPopup(`
+        <div style="padding: 12px; font-family: inherit; min-width: 210px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
+            <span style="font-size: 11px; font-weight: 800; color: white; background: ${riskColorHex}; padding: 2px 8px; border-radius: 9999px;">
+              ${riskTierLabel} (${Math.round(riskScore)}/100)
+            </span>
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">${hotspot.type}</span>
+          </div>
+          <div style="font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">
+            ${hotspot.locationName}
+          </div>
+          <p style="font-size: 12px; color: #475569; margin: 0 0 6px 0; line-height: 1.4;">
+            ${hotspot.description}
+          </p>
+          <div style="font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 4px;">
+            Severity Level: <b>${hotspot.severity}</b>
+          </div>
+        </div>
+      `);
+      hMarker.addTo(markersLayer);
+    });
+
     // 3. Render Route Polylines
     // Clean up existing polylines
     Object.values(routeLayersRef.current).forEach((polyline) => {
@@ -286,7 +338,7 @@ export const MapView: React.FC<MapViewProps> = ({
       const selectedPolyline = routeLayersRef.current[selectedRouteId];
       map.fitBounds(selectedPolyline.getBounds(), { padding: [40, 40] });
     }
-  }, [hazards, routes, selectedRouteId, studentLocation, collegeLocation, onSelectRoute]);
+  }, [hazards, routes, hotspots, selectedRouteId, studentLocation, collegeLocation, onSelectRoute]);
 
   return (
     <div

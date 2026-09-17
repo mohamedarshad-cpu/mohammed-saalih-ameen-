@@ -4,6 +4,7 @@ import { getRiskColor, getRiskLevel } from '../utils/riskUtils';
 export interface RiskScoreProps {
   score: number;
   showBar?: boolean;
+  showValue?: boolean;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   id?: string;
@@ -12,6 +13,7 @@ export interface RiskScoreProps {
 export const RiskScore: React.FC<RiskScoreProps> = ({
   score,
   showBar = true,
+  showValue = true,
   size = 'md',
   className = '',
   id,
@@ -34,17 +36,19 @@ export const RiskScore: React.FC<RiskScoreProps> = ({
 
   return (
     <div id={id} className={`flex flex-col gap-1.5 ${className}`}>
-      <div className="flex items-center justify-between gap-2">
-        <span className={`text-slate-600 font-medium ${textSizes[size]}`}>
-          Risk Score
-        </span>
-        <div className="flex items-baseline gap-1">
-          <span className={`${numberSizes[size]} ${colors.text}`}>
-            {normalized}
+      {showValue && (
+        <div className="flex items-center justify-between gap-2">
+          <span className={`text-slate-600 font-medium ${textSizes[size]}`}>
+            Risk Score
           </span>
-          <span className="text-xs text-slate-400 font-medium">/ 100</span>
+          <div className="flex items-baseline gap-1">
+            <span className={`${numberSizes[size]} ${colors.text}`}>
+              {normalized}
+            </span>
+            <span className="text-xs text-slate-400 font-medium">/ 100</span>
+          </div>
         </div>
-      </div>
+      )}
 
       {showBar && (
         <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden relative">
