@@ -1,0 +1,200 @@
+import {
+  Hazard,
+  RouteOption,
+  QuickSafetyStatus,
+  AdminDashboardStats,
+  LocationPreset,
+} from '../types';
+
+export const MOCK_STUDENT_LOCATION: [number, number] = [37.8655, -122.2685]; // University Dorms
+export const MOCK_COLLEGE_LOCATION: [number, number] = [37.8748, -122.2588]; // College Main Gate
+
+export const MOCK_LOCATIONS: LocationPreset[] = [
+  {
+    id: 'loc-1',
+    name: 'South Campus Residence Halls',
+    type: 'origin',
+    coordinates: [37.8655, -122.2685],
+    address: '2400 Durant Ave, Campus District',
+  },
+  {
+    id: 'loc-2',
+    name: 'Northgate Student Apartments',
+    type: 'origin',
+    coordinates: [37.8765, -122.2645],
+    address: '1750 Euclid Ave, Northgate',
+  },
+  {
+    id: 'loc-3',
+    name: 'Downtown Transit Center',
+    type: 'origin',
+    coordinates: [37.8702, -122.2682],
+    address: '2150 Shattuck Ave, Center',
+  },
+  {
+    id: 'loc-4',
+    name: 'State University — Main Gate & Quad',
+    type: 'destination',
+    coordinates: [37.8748, -122.2588],
+    address: 'University Drive & Memorial Way',
+  },
+  {
+    id: 'loc-5',
+    name: 'College Science & Engineering Annex',
+    type: 'destination',
+    coordinates: [37.8759, -122.2562],
+    address: 'Hearst Ave & North Gate',
+  },
+  {
+    id: 'loc-6',
+    name: 'University Health & Athletic Center',
+    type: 'destination',
+    coordinates: [37.8688, -122.2535],
+    address: 'Bancroft Way & Piedmont Ave',
+  },
+];
+
+export const MOCK_HAZARDS: Hazard[] = [
+  {
+    id: 'haz-1',
+    type: 'Flooding',
+    severity: 'High',
+    description: 'Deep standing water (6-8 inches) under railway underpass; pedestrian path submerged.',
+    locationName: 'Underpass on Oxford St',
+    coordinates: [37.8708, -122.2661],
+    reportedAt: '12 mins ago',
+    verifiedCount: 14,
+  },
+  {
+    id: 'haz-2',
+    type: 'Poor Lighting',
+    severity: 'Medium',
+    description: '3 consecutive streetlamps dark; low visibility corridor after 7:00 PM.',
+    locationName: 'East Bancroft Pathway',
+    coordinates: [37.8682, -122.2605],
+    reportedAt: '35 mins ago',
+    verifiedCount: 8,
+  },
+  {
+    id: 'haz-3',
+    type: 'Accident',
+    severity: 'High',
+    description: 'Scooter collision with construction barrier; emergency vehicle on scene, lane blocked.',
+    locationName: 'Telegraph & Haste Intersection',
+    coordinates: [37.8659, -122.2589],
+    reportedAt: '8 mins ago',
+    verifiedCount: 22,
+  },
+  {
+    id: 'haz-4',
+    type: 'Pothole',
+    severity: 'Medium',
+    description: 'Large broken asphalt pothole right along the designated student bike lane.',
+    locationName: 'Dana Street Bike Route',
+    coordinates: [37.8672, -122.2635],
+    reportedAt: '1 hour ago',
+    verifiedCount: 5,
+  },
+  {
+    id: 'haz-5',
+    type: 'Construction',
+    severity: 'Low',
+    description: 'Sidewalk scaffolding and debris fence; temporary bypass pedestrian walkway open.',
+    locationName: 'Shattuck & Allston Way',
+    coordinates: [37.8691, -122.2678],
+    reportedAt: '3 hours ago',
+    verifiedCount: 11,
+  },
+  {
+    id: 'haz-6',
+    type: 'High Traffic',
+    severity: 'Medium',
+    description: 'Heavy bumper-to-bumper vehicle congestion during peak evening transit rush.',
+    locationName: 'Fulton Transit Corridor',
+    coordinates: [37.8665, -122.2668],
+    reportedAt: '25 mins ago',
+    verifiedCount: 9,
+  },
+];
+
+export const MOCK_ROUTES: RouteOption[] = [
+  {
+    id: 'route-fastest',
+    name: 'FASTEST',
+    category: 'Fastest',
+    travelTime: '22 min',
+    distance: '3.8 km',
+    baseRiskScore: 68,
+    rainRiskScore: 84,
+    riskScore: 68,
+    riskLabel: 'HIGH RISK',
+    safetyStatus: 'Caution Advised',
+    description: 'Direct transit route via Oxford St & Telegraph corridor. High traffic volume with 2 active hazard zones.',
+    highlights: ['Shortest travel time', 'Cuts through Oxford Underpass', 'Active traffic choke point'],
+    coordinates: [
+      [37.8655, -122.2685],
+      [37.8675, -122.2680],
+      [37.8708, -122.2661], // Near flooding
+      [37.8725, -122.2645],
+      [37.8740, -122.2615],
+      [37.8748, -122.2588],
+    ],
+  },
+  {
+    id: 'route-safest',
+    name: 'SAFEST',
+    category: 'Safest',
+    travelTime: '29 min',
+    distance: '4.9 km',
+    baseRiskScore: 24,
+    rainRiskScore: 28,
+    riskScore: 24,
+    riskLabel: 'LOW RISK',
+    safetyStatus: 'Verified Safe Corridor',
+    description: 'Campus Safety Blue-Light corridor with 100% active LED streetlighting, emergency pillars, and continuous student patrol presence.',
+    highlights: ['Blue Light emergency phones', 'High pedestrian visibility', 'Zero flood or obstacle alerts'],
+    coordinates: [
+      [37.8655, -122.2685],
+      [37.8650, -122.2650],
+      [37.8652, -122.2610],
+      [37.8670, -122.2565],
+      [37.8710, -122.2545],
+      [37.8738, -122.2560],
+      [37.8748, -122.2588],
+    ],
+  },
+  {
+    id: 'route-balanced',
+    name: 'BALANCED',
+    category: 'Balanced',
+    travelTime: '25 min',
+    distance: '4.3 km',
+    baseRiskScore: 43,
+    rainRiskScore: 57,
+    riskScore: 43,
+    riskLabel: 'MEDIUM RISK',
+    safetyStatus: 'Moderate Safety Profile',
+    description: 'Even balance between travel time and well-monitored roads. Avoids flooded underpass via residential university avenues.',
+    highlights: ['Slightly longer than fastest', 'Bypasses severe Oxford flood', 'Minor construction slowdown'],
+    coordinates: [
+      [37.8655, -122.2685],
+      [37.8680, -122.2660],
+      [37.8700, -122.2625],
+      [37.8725, -122.2600],
+      [37.8748, -122.2588],
+    ],
+  },
+];
+
+export const MOCK_QUICK_SAFETY: QuickSafetyStatus = {
+  safeZones: 14,
+  highRiskZones: 3,
+  activeReports: 28,
+};
+
+export const MOCK_ADMIN_STATS: AdminDashboardStats = {
+  activeStudents: 1420,
+  highRiskZones: 6,
+  totalReports: 384,
+  todayReports: 19,
+};
